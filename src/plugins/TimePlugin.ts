@@ -1,6 +1,6 @@
 import PluginInterface from "./PluginInterface";
 
-function returnTimeString(_input: string): [string, string?] {
+async function returnTimeString(_input: string): Promise<[string, string?]> {
   const date = new Date();
   const hour = date.getHours();
   const minutes = date.getMinutes();

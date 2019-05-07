@@ -1,23 +1,34 @@
 import PluginInterface from "./plugins/PluginInterface";
+
 import * as fs from "fs";
 import * as path from "path";
 
-function isPlugin(plugin: any): plugin is PluginInterface {
+export function isPlugin(plugin: any): plugin is PluginInterface {
   return (
     plugin.name !== undefined &&
     plugin.keyphrases !== undefined &&
     plugin.isResponsePlainText !== undefined &&
-    plugin.processInput !== undefined &&
-    typeof plugin.processInput === "function"
+    plugin.processInput !== undefined
   );
 }
 
-export function loadPlugins(): PluginInterface[] {
+export async function loadPlugins(): Promise<PluginInterface[]> {
   const plugins: PluginInterface[] = [];
-  fs.readdirSync("./plugins/").forEach(async file => {
-    if (path.extname(file) !== "ts" || file === "PluginInterface.ts") return;
-    let pluginExport = await import(path.resolve("./plugins", file));
-    if (isPlugin(pluginExport)) plugins.push(pluginExport);
-  });
+  const files: string[] = fs.readdirSync(path.resolve(__dirname, "./plugins"));
+  const ext = process.env.NODE_ENV === "dev" ? ".ts" : ".js";
+  for (let file of files) {
+    if (!(path.extname(file) === ext) || file === "PluginInterface" + ext) {
+      continue;
+    }
+    try {
+      let pluginExport = await import(path.resolve(__dirname, "./plugins", file));
+      if (isPlugin(pluginExport.default)) {
+        plugins.push(pluginExport.default);
+      }
+    } catch (err) {
+      console.error("Couldn't load " + file);
+      console.error(err);
+    }
+  }
   return plugins;
 }

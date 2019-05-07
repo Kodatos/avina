@@ -16,5 +16,5 @@ export default interface PluginInterface {
   /** Function that returns a string tuple corresponding to "isResponsePlainText"
     If responding with html string, the second tuple element is used for 
     speech output */
-  processInput(speechInput: string): [string, string?];
+  processInput(speechInput: string): Promise<[string, string?]>;
 }

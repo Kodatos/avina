@@ -6,15 +6,13 @@ interface Response {
   response: [string, string?];
 }
 
-export function getResponse(input: string, plugins: Plugin[]): Response {
+export async function getResponse(input: string, plugins: Plugin[]): Promise<Response> {
   const similarityThreshold = 0.6;
   let matchedIndex = 0;
   let maxMatch = 0.0;
   plugins.forEach((plugin, index) => {
-    let currentMatch = similarity.findBestMatch(
-      input,
-      plugin.keyphrases.slice(4)
-    ).bestMatch.rating;
+    let currentMatch = similarity.findBestMatch(input, plugin.keyphrases.slice(0, 4)).bestMatch
+      .rating;
     if (currentMatch > similarityThreshold && currentMatch > maxMatch) {
       maxMatch = currentMatch;
       matchedIndex = index;
@@ -27,6 +25,6 @@ export function getResponse(input: string, plugins: Plugin[]): Response {
     };
   return {
     isPlainText: plugins[matchedIndex].isResponsePlainText,
-    response: plugins[matchedIndex].processInput(input)
+    response: await plugins[matchedIndex].processInput(input)
   };
 }
